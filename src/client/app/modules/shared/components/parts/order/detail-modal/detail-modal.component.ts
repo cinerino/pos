@@ -38,16 +38,7 @@ export class OrderDetailModalComponent implements OnInit {
             element.scrollTop = 0;
         }, 0);
         try {
-            const isRegiGrow =
-                order.paymentMethods.find((p) => {
-                    return (
-                        (p.typeOf ===
-                            Models.Purchase.Payment.PaymentMethodType.Others &&
-                            p.name === 'RegiGrow') ||
-                        p.typeOf === 'RegiGrow'
-                    );
-                }) !== undefined;
-            if (isRegiGrow) {
+            if (this.environment.REGIGROW_QRCODE !== '') {
                 const qrcodeText = this.environment.REGIGROW_QRCODE;
                 this.qrcode = await Functions.Order.createCooperationQRCode({
                     order,
