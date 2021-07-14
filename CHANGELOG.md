@@ -14,6 +14,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## 4.6.0 - 2021-07-14
+
+### Changed
+
+-   RegiGlow 連携 QR をすべての決済方法へ適用へ変更
+
 ## 4.5.0 - 2021-07-13
 
 ### Changed
