@@ -82,16 +82,7 @@ export class PurchaseCompleteComponent implements OnInit {
             if (order === undefined) {
                 throw new Error('order not found');
             }
-            const isRegiGrow =
-                order.paymentMethods.find((p) => {
-                    return (
-                        (p.typeOf ===
-                            Models.Purchase.Payment.PaymentMethodType.Others &&
-                            p.name === 'RegiGrow') ||
-                        p.typeOf === 'RegiGrow'
-                    );
-                }) !== undefined;
-            if (isRegiGrow) {
+            if (this.environment.REGIGROW_QRCODE !== '') {
                 const qrcodeText = this.environment.REGIGROW_QRCODE;
                 this.qrcode = await Functions.Order.createCooperationQRCode({
                     order,
