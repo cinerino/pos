@@ -20,12 +20,13 @@ interface ISelectedTickets {
 @Component({
     selector: 'app-purchase-event-ticket-modal',
     templateUrl: './ticket-modal.component.html',
-    styleUrls: ['./ticket-modal.component.scss']
+    styleUrls: ['./ticket-modal.component.scss'],
 })
 export class PurchaseEventTicketModalComponent implements OnInit {
-
-    @Input() public screeningEventTicketOffers: factory.chevre.event.screeningEvent.ITicketOffer[];
-    @Input() public screeningEventSeats: factory.chevre.place.seat.IPlaceWithOffer[];
+    @Input()
+    public screeningEventTicketOffers: factory.chevre.event.screeningEvent.ITicketOffer[];
+    @Input()
+    public screeningEventSeats: factory.chevre.place.seat.IPlaceWithOffer[];
     @Input() public screeningEvent: factory.event.screeningEvent.IEvent;
     @Input() public cb: (params: {
         reservations: Models.Purchase.Reservation.IReservation[];
@@ -39,31 +40,39 @@ export class PurchaseEventTicketModalComponent implements OnInit {
     public additionalTicketText: string;
     public environment = getEnvironment();
 
-    constructor(
-        public modal: BsModalRef
-    ) { }
+    constructor(public modal: BsModalRef) {}
 
     /**
      * 初期化
      */
     public ngOnInit() {
-        this.performance = new Models.Purchase.Performance({ screeningEvent: this.screeningEvent });
-        this.tickets = [];
-        this.tickets = this.screeningEventTicketOffers.filter((ticketOffer) => {
-            const movieTicketTypeChargeSpecification =
-                <IMovieTicketTypeChargeSpecification>ticketOffer.priceSpecification.priceComponent.find(
-                    (c) => c.typeOf === factory.chevre.priceSpecificationType.MovieTicketTypeChargeSpecification
-                );
-            return movieTicketTypeChargeSpecification === undefined;
+        this.performance = new Models.Purchase.Performance({
+            screeningEvent: this.screeningEvent,
         });
+        this.tickets = [];
+        this.tickets = this.screeningEventTicketOffers
+            .filter((ticketOffer) => {
+                const movieTicketTypeChargeSpecification = <
+                    IMovieTicketTypeChargeSpecification
+                >ticketOffer.priceSpecification.priceComponent.find(
+                    (c) =>
+                        c.typeOf ===
+                        factory.chevre.priceSpecificationType
+                            .MovieTicketTypeChargeSpecification
+                );
+                return movieTicketTypeChargeSpecification === undefined;
+            })
+            .filter((ticketOffer) => {
+                return ticketOffer.eligibleMembershipType === undefined;
+            });
         const selectedTickets: ISelectedTickets[] = [];
-        this.tickets.forEach(t => {
+        this.tickets.forEach((t) => {
             if (t.id === undefined) {
                 return;
             }
-            const addOn: { id: string; count: number; }[] = [];
+            const addOn: { id: string; count: number }[] = [];
             if (t.addOn !== undefined) {
-                t.addOn.forEach(a => {
+                t.addOn.forEach((a) => {
                     if (a.id === undefined) {
                         return;
                     }
@@ -79,32 +88,44 @@ export class PurchaseEventTicketModalComponent implements OnInit {
     /**
      * 予約可能数計算
      */
-    public remainingAttendeeCapacityValue(screeningEventTicketOffer: factory.chevre.event.screeningEvent.ITicketOffer) {
+    public remainingAttendeeCapacityValue(
+        screeningEventTicketOffer: factory.chevre.event.screeningEvent.ITicketOffer
+    ) {
         const values = [];
         const screeningEvent = this.screeningEvent;
         const screeningEventSeats = this.screeningEventSeats;
         let limit = Number(this.environment.PURCHASE_ITEM_MAX_LENGTH);
-        if (screeningEvent.remainingAttendeeCapacity !== undefined
-            && limit > screeningEvent.remainingAttendeeCapacity) {
+        if (
+            screeningEvent.remainingAttendeeCapacity !== undefined &&
+            limit > screeningEvent.remainingAttendeeCapacity
+        ) {
             limit = screeningEvent.remainingAttendeeCapacity;
         }
-        if (new Models.Purchase.Performance({ screeningEvent }).isTicketedSeat()) {
+        if (
+            new Models.Purchase.Performance({ screeningEvent }).isTicketedSeat()
+        ) {
             // イベント全体の残席数計算
-            const screeningEventLimit = Functions.Purchase.getRemainingSeatLength({
-                screeningEvent,
-                screeningEventSeats
-            });
+            const screeningEventLimit =
+                Functions.Purchase.getRemainingSeatLength({
+                    screeningEvent,
+                    screeningEventSeats,
+                });
             if (limit > screeningEventLimit) {
                 limit = screeningEventLimit;
             }
             // 券種ごとの残席数で計算
-            if (screeningEvent.aggregateOffer !== undefined
-                && screeningEvent.aggregateOffer.offers !== undefined) {
-                const findResult =
-                    screeningEvent.aggregateOffer.offers.find(o => o.id === screeningEventTicketOffer.id);
-                if (findResult !== undefined
-                    && findResult.remainingAttendeeCapacity !== undefined
-                    && limit > findResult.remainingAttendeeCapacity) {
+            if (
+                screeningEvent.aggregateOffer !== undefined &&
+                screeningEvent.aggregateOffer.offers !== undefined
+            ) {
+                const findResult = screeningEvent.aggregateOffer.offers.find(
+                    (o) => o.id === screeningEventTicketOffer.id
+                );
+                if (
+                    findResult !== undefined &&
+                    findResult.remainingAttendeeCapacity !== undefined &&
+                    limit > findResult.remainingAttendeeCapacity
+                ) {
                     limit = findResult.remainingAttendeeCapacity;
                 }
             }
@@ -118,9 +139,11 @@ export class PurchaseEventTicketModalComponent implements OnInit {
     /**
      * アドオン予約可能数計算
      */
-    public remainingAttendeeCapacityAddOnValue(screeningEventTicketOffer: factory.chevre.event.screeningEvent.ITicketOffer) {
+    public remainingAttendeeCapacityAddOnValue(
+        screeningEventTicketOffer: factory.chevre.event.screeningEvent.ITicketOffer
+    ) {
         const id = screeningEventTicketOffer.id;
-        const findResult = this.selectedTickets.find(s => s.id === id);
+        const findResult = this.selectedTickets.find((s) => s.id === id);
         if (findResult === undefined) {
             return [];
         }
@@ -142,19 +165,23 @@ export class PurchaseEventTicketModalComponent implements OnInit {
      */
     public createReservations() {
         const reservations: Models.Purchase.Reservation.IReservation[] = [];
-        this.selectedTickets.forEach(t => {
+        this.selectedTickets.forEach((t) => {
             const count = t.count;
             for (let i = 0; i < count; i++) {
-                const findResult = this.screeningEventTicketOffers.find(s => s.id === t.id);
+                const findResult = this.screeningEventTicketOffers.find(
+                    (s) => s.id === t.id
+                );
                 const addOn: factory.chevre.offer.IOffer[] = [];
                 if (findResult === undefined) {
                     break;
                 }
-                t.addOn.forEach(a => {
+                t.addOn.forEach((a) => {
                     if (findResult.addOn === undefined) {
                         return;
                     }
-                    const findAddOnResult = findResult.addOn.find(a2 => a2.id === a.id && i < a.count);
+                    const findAddOnResult = findResult.addOn.find(
+                        (a2) => a2.id === a.id && i < a.count
+                    );
                     if (findAddOnResult === undefined) {
                         return;
                     }
@@ -162,7 +189,7 @@ export class PurchaseEventTicketModalComponent implements OnInit {
                 });
 
                 reservations.push({
-                    ticket: { ticketOffer: findResult, addOn }
+                    ticket: { ticketOffer: findResult, addOn },
                 });
             }
         });
@@ -178,34 +205,33 @@ export class PurchaseEventTicketModalComponent implements OnInit {
         }
         const element = <HTMLSelectElement>event.target;
         const value = Number(element.value);
-        const findResult = this.selectedTickets.find(s => s.id === id);
+        const findResult = this.selectedTickets.find((s) => s.id === id);
         if (findResult === undefined) {
             return;
         }
         findResult.count = value;
         if (value === 0) {
-            findResult.addOn.forEach(a => a.count = 0);
+            findResult.addOn.forEach((a) => (a.count = 0));
         }
     }
 
     /**
      * 券種アドオン変更
      */
-     public changeAddOn(id: string, addOnId: string, event: Event) {
+    public changeAddOn(id: string, addOnId: string, event: Event) {
         if (event.target === null) {
             return;
         }
         const element = <HTMLSelectElement>event.target;
         const value = Number(element.value);
-        const findResult = this.selectedTickets.find(s => s.id === id);
+        const findResult = this.selectedTickets.find((s) => s.id === id);
         if (findResult === undefined) {
             return;
         }
-        const findAddOnResult = findResult.addOn.find(a => a.id === addOnId);
+        const findAddOnResult = findResult.addOn.find((a) => a.id === addOnId);
         if (findAddOnResult === undefined) {
             return;
         }
         findAddOnResult.count = value;
     }
-
 }

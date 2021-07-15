@@ -223,16 +223,26 @@ export class PurchaseEventScheduleComponent implements OnInit, OnDestroy {
             return;
         }
         const performance = new Models.Purchase.Performance({ screeningEvent });
+        const isInfinitetock = performance.isInfinitetock();
+        const isTicketedSeat = performance.isTicketedSeat();
+        const isOpenSeatingAllowed =
+            screen.openSeatingAllowed === undefined
+                ? false
+                : screen.openSeatingAllowed;
         const movieTicketTypeOffers =
             Functions.Purchase.getMovieTicketTypeOffers({
                 screeningEventTicketOffers,
             });
-
-        if (
-            performance.isInfinitetock() ||
-            !performance.isTicketedSeat() ||
-            (screen.openSeatingAllowed && movieTicketTypeOffers.length === 0)
-        ) {
+        // const membershipTypeOffers = Functions.Purchase.getMembershipTypeOffers(
+        //     {
+        //         screeningEventTicketOffers,
+        //     }
+        // );
+        const isOpenModal =
+            isInfinitetock ||
+            !isTicketedSeat ||
+            (isOpenSeatingAllowed && movieTicketTypeOffers.length === 0);
+        if (isOpenModal) {
             // 座席選択なし
             this.modal.show(PurchaseEventTicketModalComponent, {
                 class: 'modal-dialog-centered modal-lg',
