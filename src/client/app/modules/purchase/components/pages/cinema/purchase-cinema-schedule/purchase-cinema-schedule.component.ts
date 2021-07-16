@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { factory } from '@cinerino/sdk';
 import { select, Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 import { BAD_REQUEST, TOO_MANY_REQUESTS } from 'http-status';
 import * as moment from 'moment';
 import {
@@ -45,7 +44,6 @@ export class PurchaseCinemaScheduleComponent implements OnInit, OnDestroy {
         private store: Store<reducers.IState>,
         private router: Router,
         private utilService: UtilService,
-        private translate: TranslateService,
         private actionService: ActionService,
         private masterService: MasterService,
         private localeService: BsLocaleService
@@ -179,37 +177,12 @@ export class PurchaseCinemaScheduleComponent implements OnInit, OnDestroy {
     public async selectSchedule(
         screeningEvent: factory.chevre.event.screeningEvent.IEvent
     ) {
-        if (
-            screeningEvent.remainingAttendeeCapacity === undefined ||
-            screeningEvent.remainingAttendeeCapacity === 0
-        ) {
-            return;
-        }
-        if (
-            screeningEvent.offers === undefined ||
-            screeningEvent.offers.itemOffered.serviceOutput === undefined ||
-            screeningEvent.offers.itemOffered.serviceOutput.reservedTicket ===
-                undefined ||
-            screeningEvent.offers.itemOffered.serviceOutput.reservedTicket
-                .ticketedSeat === undefined
-        ) {
-            this.utilService.openAlert({
-                title: this.translate.instant('common.error'),
-                body: this.translate.instant(
-                    'purchase.cinema.schedule.alert.ticketedSeat'
-                ),
-            });
-            return;
-        }
         this.actionService.purchase.unsettledDelete();
         try {
             await this.actionService.purchase.event.getScreeningEvent(
                 screeningEvent
             );
-            if (
-                screeningEvent.offers.seller === undefined ||
-                screeningEvent.offers.seller.id === undefined
-            ) {
+            if (screeningEvent.offers?.seller?.id === undefined) {
                 throw new Error(
                     'screeningEvent.offers.seller or screeningEvent.offers.seller.id undefined'
                 );

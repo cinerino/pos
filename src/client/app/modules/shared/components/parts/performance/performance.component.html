@@ -3,9 +3,7 @@
                 'bg-white': performance.isSales() && !performance.isSeatStatus('danger'), 
                 'bg-dark-gray text-light-gray': !performance.isSales() 
                 || performance.isSeatStatus('danger') 
-                || (performance.isInfinitetock() && environment.VIEW_TYPE === viewType.Cinema)
-                }" [class.not-event]="performance.isInfinitetock() && environment.VIEW_TYPE === viewType.Cinema"
-    (click)="select.emit(performance.screeningEvent)">
+                }" (click)="select.emit(performance.screeningEvent)">
     <div class="col-md-12 col-8 px-0">
         <div *ngIf="environment.PURCHASE_SCHEDULE_SORT === 'screeningEventSeries'" class="mb-1 text-small screen-name">
             <p *ngIf="performance.screeningEvent.location.address | changeLanguage"
@@ -19,7 +17,8 @@
                 {{ performance.screeningEvent.name | changeLanguage }}</p>
         </div>
         <div>
-            <span class="text-large font-weight-bold">{{ moment(performance.screeningEvent.startDate).format('HH:mm') }}</span>
+            <span class="text-large font-weight-bold">{{ moment(performance.screeningEvent.startDate).format('HH:mm')
+                }}</span>
             <span>-</span>
             <span>{{ moment(performance.screeningEvent.endDate).format('HH:mm') }}</span>
         </div>
